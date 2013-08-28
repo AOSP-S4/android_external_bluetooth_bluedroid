@@ -145,8 +145,6 @@ extern bt_status_t btif_hf_execute_service(BOOLEAN b_enable);
 extern bt_status_t btif_av_execute_service(BOOLEAN b_enable);
 extern bt_status_t btif_hh_execute_service(BOOLEAN b_enable);
 extern int btif_hh_connect(bt_bdaddr_t *bd_addr);
-extern BOOLEAN btif_av_is_connected();
-extern void btif_av_close_update();
 
 
 /******************************************************************************
@@ -1354,10 +1352,6 @@ static void btif_dm_upstreams_evt(UINT16 event, char* p_param)
             }
             #endif
             btif_storage_remove_bonded_device(&bd_addr);
-            #if (defined(BLE_INCLUDED) && (BLE_INCLUDED == TRUE))
-            BTIF_TRACE_DEBUG0("Removing keys of BLE device");
-            btif_storage_remove_ble_bonding_keys(&bd_addr);
-            #endif
             bond_state_changed(BT_STATUS_SUCCESS, &bd_addr, BT_BOND_STATE_NONE);
             break;
 
@@ -1406,15 +1400,7 @@ static void btif_dm_upstreams_evt(UINT16 event, char* p_param)
             BTIF_TRACE_ERROR0("Received H/W Error. ");
             /* Flush storage data */
             btif_config_flush();
-            //checking weather music is palyed or not
-            if (btif_av_is_connected())
-            {
-                BTIF_TRACE_DEBUG0("Stream is Active disconnect before kill");
-                btif_av_close_update();
-            }
-            BTIF_TRACE_DEBUG0("going to sleep ");
             usleep(100000); /* 100milliseconds */
-            BTIF_TRACE_DEBUG0("sleep over !! ");
             /* Killing the process to force a restart as part of fault tolerance */
             kill(getpid(), SIGKILL);
             break;
